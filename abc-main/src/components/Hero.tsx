@@ -16,7 +16,7 @@ export default function Hero() {
           <h1 className="text-5xl md:text-7xl font-bold text-gray-900 tracking-tight">
             Meet <span className="text-blue-600">Nicole Orithyia</span>
             <span className="block bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-600 bg-clip-text text-transparent mt-2">
-              Karya Kelompok TI25A
+              Karya Kelompok aseli TI25A
             </span>
           </h1>
           
