@@ -10,7 +10,7 @@ export default function Hero() {
           
           <div className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg border border-blue-100">
             <Sparkles className="w-4 h-4 text-cyan-600" />
-            <span className="text-sm font-medium text-gray-700">Project AI Assistant Campus</span>
+            <span className="text-sm font-medium text-gray-700">Project program sederhana ltp</span>
           </div>
 
           <h1 className="text-5xl md:text-7xl font-bold text-gray-900 tracking-tight">
