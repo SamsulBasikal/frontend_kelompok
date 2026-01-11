@@ -14,7 +14,7 @@ function App() {
     {
       id: 2,
       name: 'Dzikri',
-      role: 'Dzikri',
+      role: 'Dzikri udah vaksin',
       photo: 'https://media1.tenor.com/m/zvmqwAzfYRAAAAAd/doaibu-spongebob.gif'
     },
     {
