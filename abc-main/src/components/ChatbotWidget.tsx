@@ -1,175 +1,174 @@
-import { useState } from 'react';
-import { MessageCircle, X, Settings, Check, Image as ImageIcon, Link as LinkIcon } from 'lucide-react';
+import { useState, useRef, useEffect, KeyboardEvent } from "react";
+import { MessageCircle, X, Loader2, Send } from "lucide-react";
 
 interface ChatbotWidgetProps {
   vercelUrl: string;
   iconUrl: string;
-  onUpdateConfig: (vercelUrl: string, iconUrl: string) => void;
+  onUpdateConfig?: (vercelUrl: string, iconUrl: string) => void;
 }
 
-export default function ChatbotWidget({ vercelUrl, iconUrl, onUpdateConfig }: ChatbotWidgetProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const [isConfigOpen, setIsConfigOpen] = useState(false);
-  const [configForm, setConfigForm] = useState({ vercelUrl, iconUrl });
+interface Message {
+  role: "user" | "assistant";
+  text: string;
+}
 
-  const handleSaveConfig = () => {
-    onUpdateConfig(configForm.vercelUrl, configForm.iconUrl);
-    setIsConfigOpen(false);
+export default function ChatbotWidget({ vercelUrl, iconUrl }: ChatbotWidgetProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  
+  const [messages, setMessages] = useState<Message[]>([
+    { role: "assistant", text: "Halo! Saya Nicole. Ada yang bisa dibantu? 😊" }
+  ]);
+  const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isOpen]);
+
+  const kirimPesan = async () => {
+    if (!input.trim()) return;
+
+    const cleanUrl = vercelUrl.replace(/\/$/, ""); 
+    const apiUrl = `${cleanUrl}/chat`;
+
+    const userMessage: Message = { role: "user", text: input };
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: userMessage.text }),
+      });
+
+      if (!response.ok) throw new Error("Gagal fetch");
+
+      const data = await response.json();
+      const botMessage: Message = { role: "assistant", text: data.reply };
+      setMessages((prev) => [...prev, botMessage]);
+
+    } catch (error) {
+      console.error(error);
+      setMessages((prev) => [...prev, { role: "assistant", text: "❌ Gagal terhubung. Pastikan server Vercel aktif." }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleEnter = (e: KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") kirimPesan();
   };
 
   return (
     <>
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-4">
-        {isConfigOpen && (
-          <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 p-6 w-80 animate-slide-up">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-bold text-gray-900 flex items-center gap-2">
-                <Settings className="w-5 h-5 text-cyan-600" />
-                Chatbot Settings
-              </h3>
-              <button
-                onClick={() => setIsConfigOpen(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-gray-700 flex items-center gap-1">
-                  <LinkIcon className="w-3 h-3" />
-                  Vercel URL
-                </label>
-                <input
-                  type="text"
-                  value={configForm.vercelUrl}
-                  onChange={(e) => setConfigForm({ ...configForm, vercelUrl: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                  placeholder="https://your-chatbot.vercel.app"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="text-xs font-semibold text-gray-700 flex items-center gap-1">
-                  <ImageIcon className="w-3 h-3" />
-                  Icon URL (Image/GIF)
-                </label>
-                <input
-                  type="text"
-                  value={configForm.iconUrl}
-                  onChange={(e) => setConfigForm({ ...configForm, iconUrl: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                  placeholder="https://example.com/icon.gif"
-                />
-              </div>
-
-              <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                <p className="text-xs text-gray-600 mb-2 font-medium">Preview:</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full overflow-hidden bg-white shadow-md flex-shrink-0">
-                    <img
-                      src={configForm.iconUrl}
-                      alt="Chatbot icon"
-                      className="w-full h-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src = 'https://images.pexels.com/photos/8294620/pexels-photo-8294620.jpeg?auto=compress&cs=tinysrgb&w=200';
-                      }}
-                    />
-                  </div>
-                  <div className="text-xs text-gray-500 break-all">
-                    {configForm.vercelUrl || 'No URL set'}
-                  </div>
-                </div>
-              </div>
-
-              <button
-                onClick={handleSaveConfig}
-                className="w-full bg-gradient-to-r from-blue-600 to-cyan-600 text-white py-2.5 rounded-lg font-semibold hover:shadow-lg transition-all flex items-center justify-center gap-2"
-              >
-                <Check className="w-4 h-4" />
-                Save Configuration
-              </button>
-            </div>
-          </div>
-        )}
-
-        {isOpen && (
-          <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 w-96 h-[500px] flex flex-col animate-scale-in">
-            <div className="bg-gradient-to-r from-blue-600 to-cyan-600 p-4 rounded-t-2xl flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full overflow-hidden bg-white shadow-md">
-                  <img
-                    src={iconUrl}
-                    alt="Chatbot"
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).src = 'https://images.pexels.com/photos/8294620/pexels-photo-8294620.jpeg?auto=compress&cs=tinysrgb&w=200';
-                    }}
-                  />
-                </div>
-                <div>
-                  <h3 className="font-bold text-white">AI Assistant</h3>
-                  <p className="text-xs text-blue-100">Online</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="text-white hover:bg-white/20 p-1.5 rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="flex-1 overflow-hidden">
-              <iframe
-                src={vercelUrl}
-                className="w-full h-full border-0"
-                title="Chatbot"
-                allow="microphone"
-              />
-            </div>
-          </div>
-        )}
-
-        <div className="flex gap-2">
-          {!isConfigOpen && (
-            <button
-              onClick={() => setIsConfigOpen(true)}
-              className="bg-white text-gray-700 p-4 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110 border border-gray-200"
-              title="Configure Chatbot"
-            >
-              <Settings className="w-5 h-5" />
-            </button>
+      {!isOpen && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="fixed bottom-6 right-6 z-50 w-16 h-16 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-full shadow-2xl hover:scale-110 transition-transform duration-300 flex items-center justify-center group"
+        >
+          <span className="absolute inline-flex h-full w-full rounded-full bg-cyan-400 opacity-75 animate-ping group-hover:hidden"></span>
+          
+          {iconUrl ? (
+             <img src={iconUrl} alt="Chat" className="w-full h-full rounded-full object-cover border-2 border-white" />
+          ) : (
+             <MessageCircle className="w-8 h-8 relative z-10" />
           )}
+        </button>
+      )}
 
-          <button
-            onClick={() => setIsOpen(!isOpen)}
-            className="group bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-4 rounded-full shadow-lg hover:shadow-xl transition-all hover:scale-110 relative"
-          >
-            {isOpen ? (
-              <X className="w-6 h-6" />
-            ) : (
-              <>
-                <div className="w-12 h-12 absolute inset-0 flex items-center justify-center">
-                  <img
-                    src={iconUrl}
-                    alt="Chat"
-                    className="w-full h-full object-cover rounded-full"
-                    onError={(e) => {
-                      (e.target as HTMLImageElement).style.display = 'none';
-                      const icon = (e.target as HTMLImageElement).nextElementSibling;
-                      if (icon) (icon as HTMLElement).style.display = 'block';
-                    }}
-                  />
-                  <MessageCircle className="w-6 h-6 hidden" />
+      {isOpen && (
+        <div className="fixed bottom-24 right-6 z-50 w-[350px] md:w-[380px] h-[550px] bg-white rounded-2xl shadow-2xl flex flex-col overflow-hidden border border-gray-100 animate-slide-up font-sans">
+          
+          <div className="bg-gradient-to-r from-blue-600 to-cyan-600 p-4 flex items-center justify-between text-white shadow-md">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm p-0.5 border border-white/30 overflow-hidden">
+                {iconUrl ? (
+                  <img src={iconUrl} alt="Bot" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-white text-blue-600">
+                    <MessageCircle size={20} />
+                  </div>
+                )}
+              </div>
+              <div>
+                <h3 className="font-bold text-base">Nicole Orithyia</h3>
+                <div className="flex items-center gap-1.5 opacity-90">
+                  <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></span>
+                  <span className="text-xs">Online</span>
                 </div>
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
-              </>
-            )}
-          </button>
+              </div>
+            </div>
+            
+            <button 
+              onClick={() => setIsOpen(false)} 
+              className="p-2 hover:bg-white/20 rounded-full transition-colors"
+            >
+              <X size={20} />
+            </button>
+          </div>
+
+          <div className="flex-1 bg-slate-50 relative overflow-hidden flex flex-col">
+            
+            <div className="absolute inset-0 opacity-5 pointer-events-none" 
+                 style={{backgroundImage: "radial-gradient(#cbd5e1 1px, transparent 1px)", backgroundSize: "20px 20px"}}>
+            </div>
+
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 relative z-10">
+              {messages.map((msg, index) => (
+                <div key={index} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                  <div 
+                    className={`max-w-[80%] p-3.5 rounded-2xl text-sm shadow-sm leading-relaxed ${
+                      msg.role === "user" 
+                        ? "bg-gradient-to-br from-blue-600 to-cyan-600 text-white rounded-br-none" 
+                        : "bg-white text-gray-800 border border-gray-100 rounded-bl-none"
+                    }`}
+                  >
+                    {msg.role === "assistant" && (
+                      <span className="block text-[10px] font-bold text-cyan-600 mb-1 uppercase tracking-wider">Nicole</span>
+                    )}
+                    <div className="whitespace-pre-line">{msg.text}</div>
+                  </div>
+                </div>
+              ))}
+              
+              {isLoading && (
+                <div className="flex justify-start animate-pulse">
+                  <div className="bg-white border border-gray-100 p-3 rounded-2xl rounded-bl-none shadow-sm flex items-center gap-2">
+                    <Loader2 className="w-4 h-4 text-cyan-600 animate-spin" />
+                    <span className="text-xs text-gray-500">Sedang mengetik...</span>
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+          </div>
+
+          <div className="p-4 bg-white border-t border-gray-100 relative z-20">
+            <div className="flex items-center gap-2 bg-gray-50 p-1.5 rounded-full border border-gray-200 focus-within:ring-2 focus-within:ring-cyan-500/50 focus-within:border-cyan-500 transition-all">
+              <input
+                type="text"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleEnter}
+                placeholder="Ketik pesan..."
+                className="flex-1 bg-transparent px-4 py-2 outline-none text-sm text-gray-700 placeholder:text-gray-400"
+              />
+              <button 
+                onClick={kirimPesan}
+                disabled={!input.trim() || isLoading}
+                className="p-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white rounded-full hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                <Send size={18} />
+              </button>
+            </div>
+          </div>
+
         </div>
-      </div>
+      )}
     </>
   );
 }

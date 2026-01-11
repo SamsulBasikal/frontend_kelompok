@@ -7,33 +7,33 @@ function App() {
   const [teamMembers, setTeamMembers] = useState([
     {
       id: 1,
-      name: 'Member 1',
-      role: 'Project Leader',
-      photo: 'https://images.pexels.com/photos/774909/pexels-photo-774909.jpeg?auto=compress&cs=tinysrgb&w=400'
+      name: 'Adit',
+      role: 'Artist',
+      photo: 'https://media1.tenor.com/m/-6gqeLSqSkEAAAAd/funny-valentine-jojo%27s-bizarre-adventure-manga.gif'
     },
     {
       id: 2,
-      name: 'Member 2',
-      role: 'Developer',
-      photo: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=400'
+      name: 'Dzikri',
+      role: 'Dzikri',
+      photo: 'https://media1.tenor.com/m/zvmqwAzfYRAAAAAd/doaibu-spongebob.gif'
     },
     {
       id: 3,
-      name: 'Member 3',
-      role: 'Designer',
-      photo: 'https://images.pexels.com/photos/1181690/pexels-photo-1181690.jpeg?auto=compress&cs=tinysrgb&w=400'
+      name: 'Willy Salim',
+      role: 'Salim',
+      photo: 'https://media1.tenor.com/m/IIXy6CqR5l8AAAAd/mrbeast-ytpmv.gif'
     },
     {
       id: 4,
-      name: 'Member 4',
-      role: 'Analyst',
-      photo: 'https://images.pexels.com/photos/1181519/pexels-photo-1181519.jpeg?auto=compress&cs=tinysrgb&w=400'
+      name: 'Zulvikar',
+      role: 'Bibup',
+      photo: 'https://media1.tenor.com/m/-O1PpXl9In8AAAAd/6-7-biboo.gif'
     }
   ]);
 
   const [chatbotConfig, setChatbotConfig] = useState({
-    vercelUrl: 'https://your-chatbot.vercel.app',
-    iconUrl: 'https://images.pexels.com/photos/8294620/pexels-photo-8294620.jpeg?auto=compress&cs=tinysrgb&w=200'
+    vercelUrl: 'https://nicole-sand.vercel.app',
+    iconUrl: ''
   });
 
   const updateMemberPhoto = (id: number, newPhoto: string) => {
