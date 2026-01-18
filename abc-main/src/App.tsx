@@ -2,6 +2,7 @@ import { useState } from 'react';
 import Hero from './components/Hero';
 import TeamSection from './components/TeamSection';
 import ChatbotWidget from './components/ChatbotWidget';
+import myIcon from './assets/avatar.png';
 
 function App() {
   const [teamMembers, setTeamMembers] = useState([
@@ -33,7 +34,7 @@ function App() {
 
   const [chatbotConfig, setChatbotConfig] = useState({
     vercelUrl: 'https://nicole-sand.vercel.app',
-    iconUrl: ''
+    iconUrl: myIcon
   });
 
   const updateMemberPhoto = (id: number, newPhoto: string) => {
